@@ -9,12 +9,9 @@ type FormState = {
   consultantDocumentType: ConsultantDocumentType;
   consultantDocumentNumber: string;
   whatsapp: string;
-  relationship: string;
   targetDocumentType: TargetDocumentType;
   targetDocumentNumber: string;
-  reason: string;
   consent: boolean;
-  truthStatement: boolean;
 };
 
 type SubmissionState =
@@ -28,12 +25,9 @@ const initialForm: FormState = {
   consultantDocumentType: 'DNI',
   consultantDocumentNumber: '',
   whatsapp: '',
-  relationship: '',
   targetDocumentType: 'DNI',
   targetDocumentNumber: '',
-  reason: 'Consulta personal',
   consent: false,
-  truthStatement: false,
 };
 
 const privacyText =
@@ -49,7 +43,6 @@ const labelTextClass = 'min-h-5 text-[0.84rem] font-semibold leading-5 text-[#30
 const controlClass =
   'h-11 w-full rounded-md border border-[#dbe2dd] bg-white px-3 py-2 text-[0.95rem] leading-none text-[#0c211c] outline-none transition focus:border-[#0c211c] focus:ring-3 focus:ring-[#0c211c]/10 disabled:cursor-not-allowed disabled:bg-[#f5f7f5] disabled:text-[#63786d] read-only:cursor-not-allowed read-only:bg-[#f5f7f5] read-only:text-[#63786d] aria-invalid:border-[#b42318]';
 const errorClass = 'min-h-4 text-[0.8rem] leading-4 text-[#b42318]';
-const hintClass = 'min-h-4 text-xs font-medium leading-4 text-[#6b7b73]';
 const fieldsetClass =
   'grid grid-cols-1 items-start gap-x-[18px] gap-y-4 border-b border-[#eef1ee] pb-[22px] md:grid-cols-2';
 const legendClass =
@@ -92,10 +85,6 @@ function validateForm(form: FormState) {
     errors.whatsapp = 'Ingresa un WhatsApp válido.';
   }
 
-  if (!form.relationship) {
-    errors.relationship = 'Selecciona tu relación con el consultado.';
-  }
-
   if (!validateDocument(form.targetDocumentType, form.targetDocumentNumber)) {
     errors.targetDocumentNumber = 'El documento consultado no tiene un formato válido.';
   }
@@ -104,30 +93,7 @@ function validateForm(form: FormState) {
     errors.consent = 'Debes aceptar el tratamiento de datos personales.';
   }
 
-  if (!form.truthStatement) {
-    errors.truthStatement = 'Debes confirmar la finalidad declarada de la consulta.';
-  }
-
   return errors;
-}
-
-function mirrorOwnerDocument(form: FormState): FormState {
-  if (form.relationship !== 'Titular') {
-    return form;
-  }
-
-  if (form.consultantDocumentType === 'DNI' || form.consultantDocumentType === 'RUC') {
-    return {
-      ...form,
-      targetDocumentType: form.consultantDocumentType,
-      targetDocumentNumber: form.consultantDocumentNumber,
-    };
-  }
-
-  return {
-    ...form,
-    targetDocumentNumber: '',
-  };
 }
 
 function App() {
@@ -139,7 +105,7 @@ function App() {
   const hasErrors = Object.keys(errors).length > 0;
 
   function updateField<K extends keyof FormState>(field: K, value: FormState[K]) {
-    setForm((current) => mirrorOwnerDocument({ ...current, [field]: value }));
+    setForm((current) => ({ ...current, [field]: value }));
     setSubmission({ status: 'idle' });
   }
 
@@ -154,10 +120,8 @@ function App() {
       consultantName: true,
       consultantDocumentNumber: true,
       whatsapp: true,
-      relationship: true,
       targetDocumentNumber: true,
       consent: true,
-      truthStatement: true,
     });
 
     if (hasErrors) {
@@ -182,16 +146,13 @@ function App() {
         tipoDocumento: form.consultantDocumentType,
         numeroDocumento: onlyDigits(form.consultantDocumentNumber),
         whatsapp: normalizeWhatsapp(form.whatsapp),
-        relacionConConsultado: form.relationship,
       },
       consultado: {
         tipoDocumento: form.targetDocumentType,
         numeroDocumento: onlyDigits(form.targetDocumentNumber),
-        motivo: form.reason,
       },
       consentimiento: {
         aceptado: form.consent,
-        declaracionVeracidad: form.truthStatement,
         texto: privacyText,
       },
       origen: {
@@ -340,25 +301,6 @@ function App() {
               {errorFor('whatsapp') && <small className={errorClass}>{errorFor('whatsapp')}</small>}
             </label>
 
-            <label className={fieldFullClass}>
-              <span className={labelTextClass}>Relación con el consultado</span>
-              <select
-                className={controlClass}
-                value={form.relationship}
-                onBlur={() => markTouched('relationship')}
-                onChange={(event) => updateField('relationship', event.target.value)}
-                aria-invalid={Boolean(errorFor('relationship'))}
-              >
-                <option value="">Selecciona una opción</option>
-                <option value="Titular">Soy el titular</option>
-                <option value="Representante autorizado">Soy representante autorizado</option>
-                <option value="Interes comercial legitimo">Tengo interés comercial legítimo</option>
-                <option value="Otro">Otro</option>
-              </select>
-              {errorFor('relationship') && (
-                <small className={errorClass}>{errorFor('relationship')}</small>
-              )}
-            </label>
           </fieldset>
 
           <fieldset className="grid grid-cols-1 items-start gap-x-[18px] gap-y-4 md:grid-cols-2">
@@ -369,7 +311,6 @@ function App() {
               <select
                 className={controlClass}
                 value={form.targetDocumentType}
-                disabled={form.relationship === 'Titular'}
                 onChange={(event) =>
                   updateField('targetDocumentType', event.target.value as TargetDocumentType)
                 }
@@ -385,34 +326,13 @@ function App() {
                 className={controlClass}
                 inputMode="numeric"
                 value={form.targetDocumentNumber}
-                readOnly={form.relationship === 'Titular'}
                 onBlur={() => markTouched('targetDocumentNumber')}
                 onChange={(event) => updateField('targetDocumentNumber', event.target.value)}
                 aria-invalid={Boolean(errorFor('targetDocumentNumber'))}
               />
-              {form.relationship === 'Titular' && (
-                <span className={hintClass}>
-                  Se copia automáticamente desde el documento del consultor.
-                </span>
-              )}
               {errorFor('targetDocumentNumber') && (
                 <small className={errorClass}>{errorFor('targetDocumentNumber')}</small>
               )}
-            </label>
-
-            <label className={fieldClass}>
-              <span className={labelTextClass}>Motivo</span>
-              <select
-                className={controlClass}
-                value={form.reason}
-                onChange={(event) => updateField('reason', event.target.value)}
-              >
-                <option value="Consulta personal">Consulta personal</option>
-                <option value="Evaluacion comercial">Evaluación comercial</option>
-                <option value="Alquiler o contrato">Alquiler o contrato</option>
-                <option value="Credito o financiamiento">Crédito o financiamiento</option>
-                <option value="Otro">Otro</option>
-              </select>
             </label>
           </fieldset>
 
@@ -428,23 +348,6 @@ function App() {
               <span className={labelTextClass}>{privacyText}</span>
             </label>
             {errorFor('consent') && <small className={errorClass}>{errorFor('consent')}</small>}
-
-            <label className="grid grid-cols-[18px_1fr] items-start gap-2.5">
-              <input
-                className="mt-[3px] h-[18px] w-[18px] accent-[#2a7221]"
-                type="checkbox"
-                checked={form.truthStatement}
-                onBlur={() => markTouched('truthStatement')}
-                onChange={(event) => updateField('truthStatement', event.target.checked)}
-              />
-              <span className={labelTextClass}>
-                Declaro que la información ingresada es veraz y que cuento con una finalidad legítima para
-                realizar esta consulta.
-              </span>
-            </label>
-            {errorFor('truthStatement') && (
-              <small className={errorClass}>{errorFor('truthStatement')}</small>
-            )}
           </div>
 
           {submission.status !== 'idle' && (

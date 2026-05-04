@@ -1,0 +1,799 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "consulta-protestos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        -384
+      ],
+      "id": "3971ef52-f48f-438d-9923-fa0fd5102f74",
+      "name": "Webhook",
+      "webhookId": "6dbfadc0-c81e-4be9-8068-3809b68572b1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=El usuario envia el siguiente mensaje:\nNombre_usuario: {{ $('Edit Fields').first().json.consultor_name }}\nmensaje_user: Quiero Consultar este DNI/RUC\nDocumento consultado: {{ $('Edit Fields').first().json.consultado_doc }}\nTipo documento: {{ $('Edit Fields').first().json.consultado_tipo }}\nLa fecha y hora actual es {{ $now }}\nIntencion del Usuario: Protestos\n\nIMPORTANTE:\nDebes leer TODOS los registros del arreglo protestos_reconocidos.\nNo uses solo el primer registro.\nSi hay varios protestos, lista cada uno.\n\nTotal de protestos encontrados: {{ $json.protestos_reconocidos.length }}\n\nPROTESTOS RECONOCIDOS:\n{{ JSON.stringify($json.protestos_reconocidos, null, 2) }}",
+        "options": {
+          "systemMessage": "=🎭 ROL DEL ASISTENTE\n\nEres el asistente virtual oficial de la Cámara de Comercio, Industria y Turismo de Ica, especializado exclusivamente en informar a personas que tienen protestos pendientes.\n\nRecibes información ya validada desde el arreglo protestos_reconocidos. Tu función es comunicar de manera clara y empática cómo pueden regularizar su situación.\n\n🎯 OBJETIVO PRINCIPAL\n\nBrindar al usuario información esencial y orientación clara cuando se confirma que tiene uno o más protestos, indicando los canales oficiales de atención para su cancelación.\n\nℹ️ INFORMACIÓN BÁSICA FIJA EN TODA RESPUESTA\n\nTeléfono de protestos: 945 446 352\n\nDirección: C. Pedro Olaechea 285, Ica\n\nHorario de atención:\nLunes a viernes, de 9:00 a 13:00 y de 14:00 a 17:00\n\nWeb: www.camaraica.org.pe\n\n🧩 LÓGICA DE OPERACIÓN\n\nÚNICO ESCENARIO: USUARIO CON PROTESTO CONFIRMADO\n\nCuando el sistema indique que el usuario TIENE PROTESTO, debes responder EXACTAMENTE con el formato indicado.\n\nIMPORTANTE:\nSi existen varios registros en protestos_reconocidos, debes listar TODOS los registros.\nNo omitas registros.\nNo uses solo el primer registro.\nPara cada registro muestra documento, entidad y monto cuando estén disponibles.\n\n📌 FORMATO DE RESPUESTA OBLIGATORIO\n\n⚠️ Atención: El documento [documento] registra protesto(s).\n\n🏦 Entidad: [entidad]\n💰 Monto: S/ [monto]\n\nSi hay varios protestos, repetir las líneas de Entidad y Monto para cada registro.\n\n📄 Para levantar el protesto, necesitás la constancia de no adeudo emitida por la entidad giradora.\n\n📲 Llamarnos o escribirnos al: 945 446 352\n📍 Visitarnos en: C. Pedro Olaechea 285 – Ica\n🕘 Horario:\nLunes a viernes, de 9:00 a 13:00 y de 14:00 a 17:00\n\nEn la Cámara de Comercio de Ica, estamos para apoyarte.\n\n🚫 RESTRICCIONES IMPORTANTES\n\n✅ Usar siempre el mismo formato de mensaje\n✅ Mantener un tono humano, claro y empático\n✅ No inventar datos que no estén en protestos_reconocidos"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        -480
+      ],
+      "id": "003d1f39-bbc4-4d2b-a497-f84b3d2b7066",
+      "name": "AI Agent",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://n8n-evolution-api.ricijy.easypanel.host/message/sendText/botcci",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=C8ED2E5BD53F-4220-9FEC-2792C830DDF6"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "=51{{ $('Edit Fields').item.json.consultor_num }}@s.whatsapp.net"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "name": "delay",
+              "value": "={{ 2000 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1744,
+        -480
+      ],
+      "id": "aba0a764-1bc2-4dc0-a6e8-becf8a8ed958",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1008,
+        -48
+      ],
+      "id": "ca694c80-dd22-48f2-b638-dad4852ac906",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -48
+      ],
+      "id": "fb2b6258-44e3-4732-8afc-91b7cdd4ccfe",
+      "name": "Google Gemini Chat Model6",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "P60wKH8HyysgPxKn",
+          "name": "Área TI - Google Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        -48
+      ],
+      "id": "921e5de2-6641-498f-82ab-6cf032462049",
+      "name": "Calculator1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        -48
+      ],
+      "id": "c2102eee-173e-45c4-bdfb-05084256ecad",
+      "name": "Wikipedia1"
+    },
+    {
+      "parameters": {
+        "text": "Eres un asistente de conocimiento",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        -256
+      ],
+      "id": "01cfca5a-68c8-4c97-91f2-232dac57cfed",
+      "name": "Gestor de Conocimiento1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        -256
+      ],
+      "id": "29447aa6-10cf-499a-9d59-893d2b045d82",
+      "name": "Think1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "14NhfMkcQ4639Hzvy0m_u7nOF39709kRvzEoaSL-l0-M",
+          "mode": "list",
+          "cachedResultName": "Tarifas Protestos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14NhfMkcQ4639Hzvy0m_u7nOF39709kRvzEoaSL-l0-M/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14NhfMkcQ4639Hzvy0m_u7nOF39709kRvzEoaSL-l0-M/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        1408,
+        -256
+      ],
+      "id": "f0508725-e066-484f-8042-6ca8580c2c85",
+      "name": "Tarifas1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3qc0vjpRFdgsG76U",
+          "name": "Área TI - Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.4-nano",
+          "mode": "list",
+          "cachedResultName": "gpt-5.4-nano"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        -256
+      ],
+      "id": "ee857d33-ab72-48b4-a339-3dda7888d56c",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "3RgTywygnQEn9dIa",
+          "name": "Área TI - OpenAi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Z5fWLX4BgwWMmGkTdxrsNGo049G_Tl2gHRyvVLzhHsU",
+          "mode": "list",
+          "cachedResultName": "Base Protestos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z5fWLX4BgwWMmGkTdxrsNGo049G_Tl2gHRyvVLzhHsU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z5fWLX4BgwWMmGkTdxrsNGo049G_Tl2gHRyvVLzhHsU/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "T.L.",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1536,
+        -256
+      ],
+      "id": "fd302004-789b-4102-bf0c-eeb2101fe564",
+      "name": "Base Protestos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3qc0vjpRFdgsG76U",
+          "name": "Área TI - Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Z5fWLX4BgwWMmGkTdxrsNGo049G_Tl2gHRyvVLzhHsU",
+          "mode": "list",
+          "cachedResultName": "Base Protestos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z5fWLX4BgwWMmGkTdxrsNGo049G_Tl2gHRyvVLzhHsU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z5fWLX4BgwWMmGkTdxrsNGo049G_Tl2gHRyvVLzhHsU/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "T.L.",
+              "lookupValue": "={{ $('Edit Fields').item.json.consultado_doc }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        64,
+        -384
+      ],
+      "id": "a5e6dbd8-08e3-41cc-b8a2-051147d9d2bc",
+      "name": "Get row(s) in sheet1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3qc0vjpRFdgsG76U",
+          "name": "Área TI - Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cfe7790f-943a-4c62-a4ea-616358fe024c",
+              "leftValue": "={{ $json.Aceptante }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        -384
+      ],
+      "id": "325345c9-720a-4ca4-8dd1-a647864eb76e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://n8n-evolution-api.ricijy.easypanel.host/message/sendText/botcci",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=C8ED2E5BD53F-4220-9FEC-2792C830DDF6"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "=51{{ $('Edit Fields').item.json.consultor_num }}@s.whatsapp.net"
+            },
+            {
+              "name": "text",
+              "value": "=Hola {{ $('Edit Fields').item.json.consultor_name }}. Bienvenido a la Cámara de Comercio de Ica:\n\n✅ Verificación exitosa: El DNI: {{ $('Edit Fields').item.json.consultado_doc }} no registra protestos pendientes a nivel provincial.\n\n¿Deseas realizar otra consulta?"
+            },
+            {
+              "name": "delay",
+              "value": "={{ 2000 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        512,
+        -288
+      ],
+      "id": "7100f624-6aba-4dd7-a9f3-e832dcab9a8b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json.consultado_doc }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        864,
+        -256
+      ],
+      "id": "4f90c882-eaca-4ed0-b7c0-7eca25fc86b0",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Xr4rTCaeoghk7j9dJpzM_Av855WY9KVUyRSm4v5cnLM",
+          "mode": "list",
+          "cachedResultName": "Consulta Protestos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Xr4rTCaeoghk7j9dJpzM_Av855WY9KVUyRSm4v5cnLM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Xr4rTCaeoghk7j9dJpzM_Av855WY9KVUyRSm4v5cnLM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefóno": "={{ $json.consultor_num }}",
+            "DNI_consultor": "={{ $json.consultor_doc }}",
+            "DNI_consultado": "={{ $json.consultado_doc }}",
+            "nombres_completos": "={{ $json.consultor_name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "nombres_completos",
+              "displayName": "nombres_completos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DNI_consultor",
+              "displayName": "DNI_consultor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telefóno",
+              "displayName": "telefóno",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DNI_consultado",
+              "displayName": "DNI_consultado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -160,
+        -384
+      ],
+      "id": "232e30da-40dd-49b3-8829-6bd8d6aeaef2",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3qc0vjpRFdgsG76U",
+          "name": "Área TI - Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72867d63-27df-47c7-bf58-c1fefe1f9834",
+              "name": "consultor_name",
+              "value": "={{ $json.body.consultor.nombres }}",
+              "type": "string"
+            },
+            {
+              "id": "319849ef-e921-4df6-a10a-a867eeea51f0",
+              "name": "consultor_doc",
+              "value": "={{ $json.body.consultor.numeroDocumento }}",
+              "type": "string"
+            },
+            {
+              "id": "8c8a2104-c272-40e3-9b87-50f0223f98a8",
+              "name": "consultor_num",
+              "value": "={{ $json.body.consultor.whatsapp }}",
+              "type": "string"
+            },
+            {
+              "id": "650dcf63-2808-4327-a91b-8c9b7da32c0e",
+              "name": "motivo",
+              "value": "={{ $json.body.consultado.motivo }}",
+              "type": "string"
+            },
+            {
+              "id": "5aefec64-0668-47af-9e77-620380d76bbf",
+              "name": "consultado_doc",
+              "value": "={{ $json.body.consultado.numeroDocumento }}",
+              "type": "string"
+            },
+            {
+              "id": "2f74090b-3026-4753-9053-bc0a68ace182",
+              "name": "consultado_tipo",
+              "value": "={{ $json.body.consultado.tipoDocumento }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -384,
+        -384
+      ],
+      "id": "01385af1-276e-46ae-bf1a-03a15d516fdf",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "protestos_reconocidos",
+        "include": "allFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -480
+      ],
+      "id": "bf7b3359-97ae-47a0-81da-c8d28efb6805",
+      "name": "Aggregate"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Gestor de Conocimiento1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gestor de Conocimiento1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gestor de Conocimiento1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gestor de Conocimiento1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gestor de Conocimiento1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tarifas1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base Protestos": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "headers": {
+          "host": "n8n-n8n.ricijy.easypanel.host",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+          "content-length": "642",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate, br, zstd",
+          "accept-language": "es-ES,es;q=0.9",
+          "content-type": "application/json",
+          "origin": "https://camaraica.org.pe",
+          "priority": "u=1, i",
+          "referer": "https://camaraica.org.pe/",
+          "sec-ch-ua": "\"Google Chrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "cross-site",
+          "x-forwarded-for": "181.67.60.27",
+          "x-forwarded-host": "n8n-n8n.ricijy.easypanel.host",
+          "x-forwarded-port": "443",
+          "x-forwarded-proto": "https",
+          "x-forwarded-server": "3b8b457ab330",
+          "x-real-ip": "181.67.60.27"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "consultor": {
+            "nombres": "LESLY SHARAIT TINEO CAIRO",
+            "tipoDocumento": "DNI",
+            "numeroDocumento": "75508524",
+            "whatsapp": "999202763",
+            "relacionConConsultado": "Representante autorizado"
+          },
+          "consultado": {
+            "tipoDocumento": "RUC",
+            "numeroDocumento": "20534498676",
+            "motivo": "Consulta personal"
+          },
+          "consentimiento": {
+            "aceptado": true,
+            "declaracionVeracidad": true,
+            "texto": "Autorizo el tratamiento de mis datos personales para registrar y atender esta solicitud de consulta informativa de protestos, incluyendo la comunicación del resultado por WhatsApp."
+          },
+          "origen": {
+            "canal": "formulario-web",
+            "producto": "consulta-protestos-mvp",
+            "enviadoEn": "2026-04-30T15:52:13.313Z"
+          }
+        },
+        "webhookUrl": "https://n8n-n8n.ricijy.easypanel.host/webhook/consulta-protestos",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0bc1998c9c731734f6d99bbc8b86d1f7060cfb39ead9344a72aa8e30bdd1b965"
+  }
+}
